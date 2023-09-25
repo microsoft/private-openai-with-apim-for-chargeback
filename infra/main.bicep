@@ -33,11 +33,13 @@ var tags = { 'env-name': environmentName }
 var openAiPrivateDnsZoneName = 'privatelink.openai.azure.com'
 var keyVaultPrivateDnsZoneName = 'privatelink.vaultcore.azure.net'
 var monitorPrivateDnsZoneName = 'privatelink.monitor.azure.com'
+var eventHubPrivateDnsZoneName = 'privatelink.servicebus.windows.net'
 
 var privateDnsZoneNames = [
   openAiPrivateDnsZoneName
   keyVaultPrivateDnsZoneName
   monitorPrivateDnsZoneName
+  eventHubPrivateDnsZoneName
 ]
 
 
@@ -101,11 +103,11 @@ module monitoring './modules/monitor/monitoring.bicep' = {
     location: location
     tags: tags
     logAnalyticsName: !empty(logAnalyticsName) ? logAnalyticsName : 'log-${resourceToken}'
-    applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : 'appins-${resourceToken}'
+    applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : 'appinsights-${resourceToken}'
     vNetName: vnet.outputs.vnetName
     privateEndpointSubnetName: vnet.outputs.privateEndpointSubnetName
     applicationInsightsDnsZoneName: monitorPrivateDnsZoneName
-    applicationInsightsPrivateEndpointName: 'appins-pe-${resourceToken}'
+    applicationInsightsPrivateEndpointName: 'appinsights-pe-${resourceToken}'
   }
 }
 
@@ -115,6 +117,10 @@ module eventhub './modules/eventhub/eventhub.bicep' = {
     location: location
     tags: tags
     eventHubName: 'eh-${resourceToken}'
+    eventHubPrivateEndpointName: 'eh-pe-${resourceToken}'
+    vNetName: vnet.outputs.vnetName
+    privateEndpointSubnetName: vnet.outputs.privateEndpointSubnetName
+    eventHubDnsZoneName: eventHubPrivateDnsZoneName
   }
 }
 
@@ -165,5 +171,5 @@ module openAi 'modules/openai/cognitiveservices.bicep' = {
 
 output TENANT_ID string = subscription().tenantId
 output AOI_DEPLOYMENTID string = chatGptDeploymentName
-output APIM_NAME string = apim.outputs.apimName
-output APIM_AOI_PATH string = apim.outputs.apimOpenaiApiPath
+// output APIM_NAME string = apim.outputs.apimName
+// output APIM_AOI_PATH string = apim.outputs.apimOpenaiApiPath

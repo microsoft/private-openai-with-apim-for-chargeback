@@ -44,7 +44,7 @@ az group create --name <ResourceGroupName> --location <location>
 
 ```shell
 cd infra
-az deployment group create -g <ResourceGroupName> --template-file main.bicep --parameters location=<location> environmentName=<environmentName>
+az deployment group create -g <ResourceGroupName> --template-file main.bicep --parameters location=<location> environmentName=<environmentName> --mode incremental
 ```
 
 

@@ -3,7 +3,12 @@ param location string = resourceGroup().location
 param tags object = {}
 param eventHubSku string = 'Standard'
 
-resource eventHubNamespace 'Microsoft.EventHub/namespaces@2021-11-01' = {
+param eventHubPrivateEndpointName string
+param vNetName string
+param privateEndpointSubnetName string
+param eventHubDnsZoneName string
+
+resource eventHubNamespace 'Microsoft.EventHub/namespaces@2022-10-01-preview' = {
   name: '${eventHubName}-ns'
   location: location
   tags: union(tags, { 'service-name': eventHubName })
@@ -15,6 +20,7 @@ resource eventHubNamespace 'Microsoft.EventHub/namespaces@2021-11-01' = {
   properties: {
     isAutoInflateEnabled: false
     maximumThroughputUnits: 0
+    publicNetworkAccess: 'Disabled'
   }
 }
 
@@ -26,6 +32,7 @@ resource eventHub 'Microsoft.EventHub/namespaces/eventhubs@2022-01-01-preview' =
     partitionCount: 1
   }
 }
+
 resource eventHubListenSendRule 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules@2021-01-01-preview' = {
   parent: eventHub
   name: 'ListenSend'
@@ -38,6 +45,21 @@ resource eventHubListenSendRule 'Microsoft.EventHub/namespaces/eventhubs/authori
   dependsOn: [
     eventHubNamespace
   ]
+}
+
+module privateEndpoint '../networking/private-endpoint.bicep' = {
+  name: '${eventHubName}-privateEndpoint-deployment'
+  params: {
+    groupIds: [
+      'namespace'
+    ]
+    dnsZoneName: eventHubDnsZoneName
+    name: eventHubPrivateEndpointName
+    subnetName: privateEndpointSubnetName
+    privateLinkServiceId: eventHubNamespace.id
+    vNetName: vNetName
+    location: location
+  }
 }
 
 //Create connectionstring

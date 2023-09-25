@@ -9,7 +9,7 @@
         <base />
         <choose>
             <when condition="@(context.Response.StatusCode == 200)">
-                <log-to-eventhub logger-id="OpenAILogger" partition-id="0">@{
+                <log-to-eventhub logger-id="OpenAILogger">@{
                 var responseBody = context.Response.Body?.As<JObject>(true);
                 var requestBody = (JObject)context.Variables["requestData"];                
                 return new JObject(
