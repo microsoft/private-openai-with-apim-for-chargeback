@@ -10,8 +10,7 @@ param environmentName string
 @allowed(['westeurope','southcentralus','australiaeast', 'canadaeast', 'eastus', 'eastus2', 'francecentral', 'japaneast', 'northcentralus', 'swedencentral', 'switzerlandnorth', 'uksouth'])
 param location string
 
-//Leave blank to use default naming conventions
-param resourceGroupName string = ''
+//Leave blank to use default naming
 param openAiServiceName string = ''
 param keyVaultName string = ''
 param identityName string = ''
@@ -24,16 +23,9 @@ param apimNsgName string = ''
 param privateEndpointSubnetName string = ''
 param privateEndpointNsgName string = ''
 
-//Determine the version of the chat model to deploy
-param arrayVersion0301Locations array = [
-  'westeurope'
-  'southcentralus'
-]
-param chatGptModelVersion string = ((contains(arrayVersion0301Locations, location)) ? '0301' : '0613')
-
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var openAiSkuName = 'S0'
-var chatGptDeploymentName = 'chat'
+var chatGptDeploymentName = 'gpt-35'
 var chatGptModelName = 'gpt-35-turbo'
 var openaiApiKeySecretName = 'openai-apikey'
 var tags = { 'env-name': environmentName }
@@ -162,7 +154,6 @@ module openAi 'modules/openai/cognitiveservices.bicep' = {
         model: {
           format: 'OpenAI'
           name: chatGptModelName
-          version: chatGptModelVersion
         }
         scaleSettings: {
           scaleType: 'Standard'

@@ -89,6 +89,8 @@ resource apimOpenaiApi 'Microsoft.ApiManagement/service/apis@2022-08-01' = {
   }
 }
 
+
+//Event Hub Logger
 resource eventHubLogger 'Microsoft.ApiManagement/service/loggers@2022-04-01-preview' = {
   name: apimloggerName
   parent: apimService
@@ -101,7 +103,6 @@ resource eventHubLogger 'Microsoft.ApiManagement/service/loggers@2022-04-01-prev
     }
   }
 }
-
 
 resource openAiBackend 'Microsoft.ApiManagement/service/backends@2021-08-01' = {
   name: openAiApiBackendId
@@ -143,19 +144,37 @@ resource openaiApiPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-08-
   ]
 }
 
-resource apiOperationCompletions 'Microsoft.ApiManagement/service/apis/operations@2020-06-01-preview' existing = {
+//Add Policy to Chat Completions Endpoint
+resource apiOperationChatCompletions 'Microsoft.ApiManagement/service/apis/operations@2020-06-01-preview' existing = {
   name: 'ChatCompletions_Create'
   parent: apimOpenaiApi
 }
 
 resource chatCompletionsCreatePolicy 'Microsoft.ApiManagement/service/apis/operations/policies@2022-08-01' = {
   name: 'policy'
-  parent: apiOperationCompletions
+  parent: apiOperationChatCompletions
   properties: {
-    value: loadTextContent('./policies/api_logging_policy.xml')
+    value: loadTextContent('./policies/api_chat_completions_logging_policy.xml')
     format: 'rawxml'
   }
 }
+
+//Add Policy to Completions Endpoint
+resource apiOperationCompletions 'Microsoft.ApiManagement/service/apis/operations@2020-06-01-preview' existing = {
+  name: 'Completions_Create'
+  parent: apimOpenaiApi
+}
+
+resource completionsCreatePolicy 'Microsoft.ApiManagement/service/apis/operations/policies@2022-08-01' = {
+  name: 'policy'
+  parent: apiOperationCompletions
+  properties: {
+    value: loadTextContent('./policies/api_completions_logging_policy.xml')
+    format: 'rawxml'
+  }
+}
+
+
 
 resource apimLogger 'Microsoft.ApiManagement/service/loggers@2021-12-01-preview' = {
   name: 'appinsights-logger'
