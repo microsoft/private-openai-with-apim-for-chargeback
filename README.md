@@ -31,3 +31,26 @@ trademarks or logos is subject to and must follow
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
+
+## Deployment Steps
+
+### Create Resource Group
+
+```shell
+az group create --name <ResourceGroupName> --location <location>
+```
+
+### Step 1: Deploy bicep
+
+```shell
+cd infra
+az deployment group create -g <ResourceGroupName> --template-file main.bicep --parameters location=<location> environmentName=<environmentName>
+```
+
+
+## Additional Details
+
+
+### Azure OpenAI Swagger Specification
+
+[Azure OpenAI Swagger Spec](https://github.com/Azure/azure-rest-api-specs/blob/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/stable/2023-05-15/inference.json) is imported in Azure API Management.
