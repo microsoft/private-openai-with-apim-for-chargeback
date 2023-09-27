@@ -1,0 +1,19 @@
+{
+ "version": "2.0",
+  "logging": {
+    "logLevel": {
+      "default": "None",
+      "Host": "None",
+      "Function": "None",
+      "Host.Aggregator": "None",      
+      "Microsoft": "None",
+      "Worker": "None" 
+    },
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": false,
+        "excludedTypes": "Request"
+      }
+    }
+  }
+}
