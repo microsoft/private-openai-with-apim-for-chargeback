@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "FnApp_EH_Subscriber": {
+    "chargeback_eventhub_trigger": {
       "commandName": "Project",
       "commandLineArgs": "--port 7057",
       "launchBrowser": false

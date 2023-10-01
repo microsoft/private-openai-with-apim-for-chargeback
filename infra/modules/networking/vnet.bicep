@@ -4,13 +4,15 @@ param apimSubnetName string
 param apimNsgName string
 param privateEndpointSubnetName string
 param privateEndpointNsgName string
+param functionAppSubnetName string
+param functionAppNsgName string
 param privateDnsZoneNames array
 param tags object = {}
 
 resource apimNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01' = {
   name: apimNsgName
   location: location
-  tags: union(tags, { 'service-name': apimNsgName })
+  tags: union(tags, { 'azd-service-name': apimNsgName })
   properties: {
     securityRules: [
       {
@@ -59,7 +61,16 @@ resource apimNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01' = {
 resource privateEndpointNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01' = {
   name: privateEndpointNsgName
   location: location
-  tags: union(tags, { 'service-name': privateEndpointNsgName })
+  tags: union(tags, { 'azd-service-name': privateEndpointNsgName })
+  properties: {
+    securityRules: []
+  }
+}
+
+resource functionAppNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01' = {
+  name: functionAppNsgName
+  location: location
+  tags: union(tags, { 'azd-service-name': functionAppNsgName })
   properties: {
     securityRules: []
   }
@@ -68,7 +79,7 @@ resource privateEndpointNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01'
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
   name: name
   location: location
-  tags: union(tags, { 'service-name': name })
+  tags: union(tags, { 'azd-service-name': name })
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -100,6 +111,25 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
           }
         }
       }
+      {
+        name: functionAppSubnetName
+        properties: {
+          addressPrefix: '10.0.3.0/24'
+          networkSecurityGroup: functionAppNsg.id == '' ? null : {
+            id: functionAppNsg.id
+          }
+          privateEndpointNetworkPolicies: 'Enabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
+          delegations: [
+            {
+              name: 'Microsoft.Web/serverFarms'
+              properties: {
+                serviceName: 'Microsoft.Web/serverFarms'
+              }
+            }
+          ]
+        }
+      }
     ]
   }
 
@@ -113,6 +143,10 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
 
   resource privateEndpointSubnet 'subnets' existing = {
     name: privateEndpointSubnetName
+  }
+
+  resource functionAppSubnet 'subnets' existing = {
+    name: functionAppSubnetName
   }
 }
 
@@ -133,3 +167,5 @@ output apimSubnetName string = virtualNetwork::apimSubnet.name
 output apimSubnetId string = virtualNetwork::apimSubnet.id
 output privateEndpointSubnetName string = virtualNetwork::privateEndpointSubnet.name
 output privateEndpointSubnetId string = virtualNetwork::privateEndpointSubnet.id
+output functionAppSubnetName string = virtualNetwork::functionAppSubnet.name
+output functionAppSubnetId string = virtualNetwork::functionAppSubnet.id

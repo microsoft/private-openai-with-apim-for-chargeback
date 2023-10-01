@@ -1,7 +1,8 @@
 param name string
 param location string
 param logAnalyticsWorkspaceName string
-param managedIdentityName string
+param apimManagedIdentityName string
+param functionAppManagedIdentityName string
 param keyVaultPrivateEndpointName string
 param vNetName string
 param privateEndpointSubnetName string
@@ -9,14 +10,18 @@ param keyVaultDnsZoneName string
 param publicNetworkAccess string = 'Disabled'
 param tags object = {}
 
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-  name: managedIdentityName
+resource apimManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: apimManagedIdentityName
+}
+
+resource functionAppmanagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: functionAppManagedIdentityName
 }
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   name: name
   location: location
-  tags: union(tags, { 'service-name': name })
+  tags: union(tags, { 'azd-service-name': name })
   properties: {
     sku: {
       family: 'A'
@@ -28,8 +33,18 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
     publicNetworkAccess: publicNetworkAccess
     accessPolicies: [
       {
-        objectId: managedIdentity.properties.principalId
-        tenantId: managedIdentity.properties.tenantId
+        objectId: apimManagedIdentity.properties.principalId
+        tenantId: apimManagedIdentity.properties.tenantId
+        permissions: {
+          secrets: [
+            'get'
+            'list'
+          ]
+        }
+      }
+      {
+        objectId: functionAppmanagedIdentity.properties.principalId
+        tenantId: functionAppmanagedIdentity.properties.tenantId
         permissions: {
           secrets: [
             'get'
@@ -42,7 +57,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
 }
 
 module privateEndpoint '../networking/private-endpoint.bicep' = {
-  name: '${keyVault.name}-privateEndpoint-deployment'
+  name: '${keyVault.name}-privateEndpoint'
   params: {
     groupIds: [
       'vault'

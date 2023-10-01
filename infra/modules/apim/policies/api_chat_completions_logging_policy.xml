@@ -13,7 +13,8 @@
                 var responseBody = context.Response.Body?.As<JObject>(true);
                 var requestBody = (JObject)context.Variables["requestData"];                
                 return new JObject(
-                    new JProperty("event-time", DateTime.UtcNow.ToString()),                    
+                    new JProperty("event-time", DateTime.UtcNow.ToString()),
+                    new JProperty("appSubscriptionKey", context.Request.Headers.GetValueOrDefault("Ocp-Apim-Subscription-Key",string.Empty)),  
                     new JProperty("id", responseBody["id"].ToString()),
                     new JProperty("operation", responseBody["object"].ToString()),
                     new JProperty("model", responseBody["model"].ToString()),

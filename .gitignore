@@ -1,5 +1,1 @@
 .azure
-local.tests.http
-local.deploy.ps1
-Apps/FnApp-EH-Subscriber/FnApp-EH-Subscriber/Properties/PublishProfiles/FnApp-EH-Subscribr - Zip Deploy.pubxml
-Apps/FnApp-EH-Subscriber/FnApp-EH-Subscriber/.vscode/tasks.json

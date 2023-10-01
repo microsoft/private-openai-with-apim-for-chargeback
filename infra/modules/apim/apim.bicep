@@ -1,4 +1,4 @@
-param name string
+param apimName string
 param location string = resourceGroup().location
 param tags object = {}
 
@@ -13,29 +13,27 @@ param applicationInsightsName string
 param openAiUri string
 param openaiKeyVaultSecretName string
 param keyVaultEndpoint string
-param managedIdentityName string
+param apimManagedIdentityName string
 param apimSubnetId string
-param eventHubConnectionString string
+param eventHubNamespace string
 param eventHubName string
 
 var openAiApiKeyNamedValue = 'openai-apikey'
 var openAiApiBackendId = 'openai-backend'
-
 var apimloggerName = 'OpenAILogger'
-
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: applicationInsightsName
 }
 
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-  name: managedIdentityName
+resource apimManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: apimManagedIdentityName
 }
 
-resource apimService 'Microsoft.ApiManagement/service@2021-08-01' = {
-  name: name
+resource apimService 'Microsoft.ApiManagement/service@2022-08-01' = {
+  name: apimName
   location: location
-  tags: union(tags, { 'service-name': name })
+  tags: union(tags, { 'azd-service-name': apimName })
   sku: {
     name: sku
     capacity: (sku == 'Consumption') ? 0 : ((sku == 'Developer') ? 1 : skuCount)
@@ -43,7 +41,7 @@ resource apimService 'Microsoft.ApiManagement/service@2021-08-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${managedIdentity.id}': {}
+      '${apimManagedIdentity.id}': {}
     }
   }
   properties: {
@@ -89,16 +87,50 @@ resource apimOpenaiApi 'Microsoft.ApiManagement/service/apis@2022-08-01' = {
   }
 }
 
+//Product for OpenAI API
+resource openAiProduct 'Microsoft.ApiManagement/service/products@2023-03-01-preview' = {
+  parent: apimService
+  name: 'OpenAI'
+  properties: {
+    displayName: 'OpenAI'
+    description: 'OpenAI API Product'
+    subscriptionRequired: true
+    approvalRequired: false
+    state: 'published'
+  }
+}
+
+//Link OpenAI API to Product
+resource openAiProductLink 'Microsoft.ApiManagement/service/products/apiLinks@2023-03-01-preview' = {
+  name: 'openai-product-apilink'
+  parent: openAiProduct
+  properties: {
+    apiId: apimOpenaiApi.id
+  }
+}
+// Add Subscription fpr OpenAI Product
+resource openAiSubscription 'Microsoft.ApiManagement/service/subscriptions@2023-03-01-preview' = {
+  name: 'openai-subscription'
+  parent: apimService
+  properties: {
+    scope: openAiProduct.id
+    displayName: 'Open Ai Subscription'
+    state: 'active'
+    allowTracing: false
+  }
+}
+
 
 //Event Hub Logger
-resource eventHubLogger 'Microsoft.ApiManagement/service/loggers@2022-04-01-preview' = {
+resource eventHubLoggerWithUserAssignedIdentity 'Microsoft.ApiManagement/service/loggers@2022-04-01-preview' = {
   name: apimloggerName
   parent: apimService
   properties: {
     loggerType: 'azureEventHub'
-    description: 'Event hub logger with connection string'
+    description: 'Event hub logger with user-assigned managed identity'
     credentials: {
-      connectionString: eventHubConnectionString
+      endpointAddress: '${eventHubNamespace}.servicebus.windows.net'
+      identityClientId: apimManagedIdentity.properties.clientId
       name: eventHubName
     }
   }
@@ -126,7 +158,7 @@ resource apimOpenaiApiKeyNamedValue 'Microsoft.ApiManagement/service/namedValues
     secret: true
     keyVault:{
       secretIdentifier: '${keyVaultEndpoint}secrets/${openaiKeyVaultSecretName}'
-      identityClientId: apimService.identity.userAssignedIdentities[managedIdentity.id].clientId
+      identityClientId: apimManagedIdentity.properties.clientId
     }
   }
 }
@@ -140,7 +172,6 @@ resource openaiApiPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-08-
   }
   dependsOn: [
     openAiBackend
-    apimOpenaiApiKeyNamedValue
   ]
 }
 
@@ -173,8 +204,6 @@ resource completionsCreatePolicy 'Microsoft.ApiManagement/service/apis/operation
     format: 'rawxml'
   }
 }
-
-
 
 resource apimLogger 'Microsoft.ApiManagement/service/loggers@2021-12-01-preview' = {
   name: 'appinsights-logger'

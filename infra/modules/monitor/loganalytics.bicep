@@ -10,7 +10,7 @@ resource privateLinkScope 'microsoft.insights/privateLinkScopes@2021-07-01-previ
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' = {
   name: name
   location: location
-  tags: union(tags, { 'service-name': name })
+  tags: union(tags, { 'azd-service-name': name })
   properties: any({
     retentionInDays: 30
     features: {

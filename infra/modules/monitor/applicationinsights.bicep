@@ -16,7 +16,7 @@ resource privateLinkScope 'microsoft.insights/privateLinkScopes@2021-07-01-previ
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: name
   location: location
-  tags: union(tags, { 'service-name': name })
+  tags: union(tags, { 'azd-service-name': name })
   kind: 'web'
   properties: {
     Application_Type: 'web'
@@ -27,7 +27,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 module privateEndpoint '../networking/private-endpoint.bicep' = {
-  name: '${applicationInsights.name}-privateEndpoint-deployment'
+  name: '${applicationInsights.name}-privateEndpoint'
   params: {
     groupIds: [
       'azuremonitor'
@@ -49,6 +49,4 @@ resource appInsightsScopedResource 'Microsoft.Insights/privateLinkScopes/scopedR
   }
 }
 
-output connectionString string = applicationInsights.properties.ConnectionString
-output instrumentationKey string = applicationInsights.properties.InstrumentationKey
-output name string = applicationInsights.name
+output applicationInsightsName string = applicationInsights.name
