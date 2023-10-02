@@ -96,8 +96,8 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2020-12-01' = {
   name: 'appsettings'
   properties: {
       APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
-      AzureWebJobsStorage: storageAccountConnectionString
-      //AzureWebJobsStorage__accountName: storageAccountName      
+      //AzureWebJobsStorage: storageAccountConnectionString
+      AzureWebJobsStorage__accountname: storageAccountName      
       FUNCTIONS_EXTENSION_VERSION:  '~4'
       FUNCTIONS_WORKER_RUNTIME: functionRuntime
       WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=core.windows.net'
