@@ -243,7 +243,8 @@ module functionApp './modules/functionapp/functionapp.bicep' = {
     storageAccountName: storageAccount.outputs.storageAccountName
     functionAppIdentityName: functionAppManagedIdentity.outputs.managedIdentityName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
-    eventHubNamespace: eventhub.outputs.eventHubNamespace
+    //eventHubNamespaceName: eventhub.outputs.eventHubNamespace
+    eventHubConnectionString: eventhub.outputs.eventHubConnectionString
     eventHubName: eventhub.outputs.eventHubName   
     vnetName: vnet.outputs.vnetName
     functionAppSubnetId: vnet.outputs.functionAppSubnetId     

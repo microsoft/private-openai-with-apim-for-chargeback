@@ -167,7 +167,7 @@ resource openaiApiPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-08-
   name: 'policy'
   parent: apimOpenaiApi
   properties: {
-    value: loadTextContent('./policies/api_policy.xml')
+    value: loadTextContent('./policies/api_policy_eventhub_logging.xml')
     format: 'rawxml'
   }
   dependsOn: [
@@ -185,7 +185,7 @@ resource chatCompletionsCreatePolicy 'Microsoft.ApiManagement/service/apis/opera
   name: 'policy'
   parent: apiOperationChatCompletions
   properties: {
-    value: loadTextContent('./policies/api_chat_completions_logging_policy.xml')
+    value: loadTextContent('./policies/api_chat_completions_operation_policy.xml')
     format: 'rawxml'
   }
 }
@@ -200,7 +200,7 @@ resource completionsCreatePolicy 'Microsoft.ApiManagement/service/apis/operation
   name: 'policy'
   parent: apiOperationCompletions
   properties: {
-    value: loadTextContent('./policies/api_completions_logging_policy.xml')
+    value: loadTextContent('./policies/api_completions_operation_policy.xml')
     format: 'rawxml'
   }
 }

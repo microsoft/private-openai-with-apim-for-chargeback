@@ -115,4 +115,6 @@ output eventHubNamespace string = eventHubNamespace.name
 //output eventHubName
 output eventHubName string = eventHub.name
 
+output eventHubConnectionString string = eventHubListenSendRule.listkeys().primaryConnectionString
+
 

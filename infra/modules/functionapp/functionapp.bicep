@@ -7,8 +7,9 @@ param storageAccountName string
 param functionAppIdentityName string
 
 param applicationInsightsName string
-param eventHubNamespace string
+//param eventHubNamespaceName string
 param eventHubName string
+param eventHubConnectionString string
 param vnetName string
 param functionAppSubnetId string
 
@@ -32,6 +33,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' existing 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: applicationInsightsName
 }
+
 
 var storageAccountConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=core.windows.net'
 
@@ -96,8 +98,8 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2020-12-01' = {
   name: 'appsettings'
   properties: {
       APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
-      //AzureWebJobsStorage: storageAccountConnectionString
-      AzureWebJobsStorage__accountname: storageAccountName      
+      AzureWebJobsStorage: storageAccountConnectionString
+      //AzureWebJobsStorage__accountname: storageAccountName      
       FUNCTIONS_EXTENSION_VERSION:  '~4'
       FUNCTIONS_WORKER_RUNTIME: functionRuntime
       WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=core.windows.net'
@@ -106,9 +108,10 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2020-12-01' = {
       
       //EventHub Input Trigger Settings With Managed Identity
       //https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=eventhubs&pivots=programming-language-csharp#common-properties-for-identity-based-connections
-      EventHubConnection__clientId: functionAppmanagedIdentity.properties.clientId
-      EventHubConnection__credential: 'managedidentity'
-      EventHubConnection__fullyQualifiedNamespace: '${eventHubNamespace}.servicebus.windows.net'
+      //EventHubConnection__clientId: functionAppmanagedIdentity.properties.clientId
+      //EventHubConnection__credential: 'managedidentity'
+      //EventHubConnection__fullyQualifiedNamespace: '${eventHubNamespace}.servicebus.windows.net'
+      EventHubConnection: eventHubConnectionString
       EventHubName: eventHubName
   }  
 }
