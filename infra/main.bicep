@@ -7,6 +7,7 @@ param environmentName string
 
 @minLength(1)
 @description('Primary location for all resources')
+@allowed(['australiaeast', 'canadaeast', 'eastus', 'eastus2', 'francecentral', 'japaneast', 'northcentralus', 'swedencentral', 'switzerlandnorth', 'uksouth', ])
 param location string
 
 @minLength(5)
@@ -47,6 +48,8 @@ param privateEndpointNsgName string = ''
 var openAiSkuName = 'S0'
 var chatGptDeploymentName = 'gpt-35'
 var chatGptModelName = 'gpt-35-turbo'
+var embeddingDeploymentName = 'embedding'
+var embeddingModelName = 'text-embedding-ada-002'
 var openaiApiKeySecretName = 'openai-apikey'
 
 var storageAccountConnectionStringSecretName = 'storage-account-connection-string'
@@ -131,6 +134,17 @@ module openAi 'modules/openai/cognitiveservices.bicep' = {
         model: {
           format: 'OpenAI'
           name: chatGptModelName
+        }
+        scaleSettings: {
+          scaleType: 'Standard'
+        }
+      }
+      {
+        name: embeddingDeploymentName
+        model: {
+          format: 'OpenAI'
+          name: embeddingModelName
+          version: '2'
         }
         scaleSettings: {
           scaleType: 'Standard'
@@ -221,7 +235,6 @@ module apim './modules/apim/apim.bicep' = {
     apimName: !empty(apimServiceName) ? apimServiceName : 'apim-${resourceToken}'
     location: location
     tags: tags
-    applicationInsightsName: monitoring.outputs.applicationInsightsName
     openaiKeyVaultSecretName: keyVaultSecrets.outputs.openAiKeySecretName
     keyVaultEndpoint: keyVault.outputs.keyVaultEndpoint
     openAiUri: openAi.outputs.openAiEndpointUri
@@ -243,7 +256,7 @@ module functionApp './modules/functionapp/functionapp.bicep' = {
     storageAccountName: storageAccount.outputs.storageAccountName
     functionAppIdentityName: functionAppManagedIdentity.outputs.managedIdentityName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
-    //eventHubNamespaceName: eventhub.outputs.eventHubNamespace
+    eventHubNamespaceName: eventhub.outputs.eventHubNamespace
     eventHubConnectionString: eventhub.outputs.eventHubConnectionString
     eventHubName: eventhub.outputs.eventHubName   
     vnetName: vnet.outputs.vnetName

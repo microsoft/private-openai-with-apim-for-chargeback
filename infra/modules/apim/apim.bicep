@@ -9,7 +9,6 @@ param publisherEmail string = 'noreply@microsoft.com'
 param publisherName string = 'n/a'
 param sku string = 'Developer'
 param skuCount int = 1
-param applicationInsightsName string
 param openAiUri string
 param openaiKeyVaultSecretName string
 param keyVaultEndpoint string
@@ -21,10 +20,8 @@ param eventHubName string
 var openAiApiKeyNamedValue = 'openai-apikey'
 var openAiApiBackendId = 'openai-backend'
 var apimloggerName = 'OpenAILogger'
+var apimManagedIdentityClientIdNamedValue = 'apim-mi-clientId'
 
-resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
-  name: applicationInsightsName
-}
 
 resource apimManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
   name: apimManagedIdentityName
@@ -121,21 +118,6 @@ resource openAiSubscription 'Microsoft.ApiManagement/service/subscriptions@2023-
 }
 
 
-//Event Hub Logger
-resource eventHubLoggerWithUserAssignedIdentity 'Microsoft.ApiManagement/service/loggers@2022-04-01-preview' = {
-  name: apimloggerName
-  parent: apimService
-  properties: {
-    loggerType: 'azureEventHub'
-    description: 'Event hub logger with user-assigned managed identity'
-    credentials: {
-      endpointAddress: '${eventHubNamespace}.servicebus.windows.net'
-      identityClientId: apimManagedIdentity.properties.clientId
-      name: eventHubName
-    }
-  }
-}
-
 resource openAiBackend 'Microsoft.ApiManagement/service/backends@2021-08-01' = {
   name: openAiApiBackendId
   parent: apimService
@@ -160,6 +142,16 @@ resource apimOpenaiApiKeyNamedValue 'Microsoft.ApiManagement/service/namedValues
       secretIdentifier: '${keyVaultEndpoint}secrets/${openaiKeyVaultSecretName}'
       identityClientId: apimManagedIdentity.properties.clientId
     }
+  }  
+}
+
+resource apimManagedIdClientIdNamedValue 'Microsoft.ApiManagement/service/namedValues@2022-08-01' = {
+  name: apimManagedIdentityClientIdNamedValue
+  parent: apimService
+  properties: {
+    displayName: apimManagedIdentityClientIdNamedValue
+    secret: true
+    value: apimManagedIdentity.properties.clientId
   }
 }
 
@@ -167,7 +159,7 @@ resource openaiApiPolicy 'Microsoft.ApiManagement/service/apis/policies@2022-08-
   name: 'policy'
   parent: apimOpenaiApi
   properties: {
-    value: loadTextContent('./policies/api_policy_eventhub_logging.xml')
+    value: loadTextContent('./policies/api_eventhub_logging_policy.xml')
     format: 'rawxml'
   }
   dependsOn: [
@@ -188,6 +180,11 @@ resource chatCompletionsCreatePolicy 'Microsoft.ApiManagement/service/apis/opera
     value: loadTextContent('./policies/api_chat_completions_operation_policy.xml')
     format: 'rawxml'
   }
+  dependsOn: [
+    apimManagedIdentity
+    apimManagedIdClientIdNamedValue
+  ]
+  
 }
 
 //Add Policy to Completions Endpoint
@@ -205,18 +202,26 @@ resource completionsCreatePolicy 'Microsoft.ApiManagement/service/apis/operation
   }
 }
 
-resource apimLogger 'Microsoft.ApiManagement/service/loggers@2021-12-01-preview' = {
-  name: 'appinsights-logger'
+
+//Event Hub Logger
+resource eventHubLoggerWithUserAssignedIdentity 'Microsoft.ApiManagement/service/loggers@2022-04-01-preview' = {
+  name: apimloggerName
   parent: apimService
   properties: {
+    loggerType: 'azureEventHub'
+    description: 'Event hub logger with user-assigned managed identity'
     credentials: {
-      instrumentationKey: applicationInsights.properties.InstrumentationKey
+      endpointAddress: '${eventHubNamespace}.servicebus.windows.net'
+      //use a pre-existing named value as apim logger creates a new named value on every deployment
+      //https://github.com/Azure/azure-powershell/issues/12228
+      identityClientId: '{{ apim-mi-clientId }}' 
+      name: eventHubName
     }
-    description: 'Logger to Azure Application Insights'
-    isBuffered: false
-    loggerType: 'applicationInsights'
-    resourceId: applicationInsights.id
   }
+  dependsOn: [
+    apimManagedIdentity
+    apimManagedIdClientIdNamedValue
+  ]
 }
 
 output apimName string = apimService.name

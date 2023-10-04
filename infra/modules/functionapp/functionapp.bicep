@@ -7,7 +7,7 @@ param storageAccountName string
 param functionAppIdentityName string
 
 param applicationInsightsName string
-//param eventHubNamespaceName string
+param eventHubNamespaceName string
 param eventHubName string
 param eventHubConnectionString string
 param vnetName string
@@ -108,10 +108,10 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2020-12-01' = {
       
       //EventHub Input Trigger Settings With Managed Identity
       //https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=eventhubs&pivots=programming-language-csharp#common-properties-for-identity-based-connections
-      //EventHubConnection__clientId: functionAppmanagedIdentity.properties.clientId
-      //EventHubConnection__credential: 'managedidentity'
-      //EventHubConnection__fullyQualifiedNamespace: '${eventHubNamespace}.servicebus.windows.net'
-      EventHubConnection: eventHubConnectionString
+      EventHubConnection__clientId: functionAppmanagedIdentity.properties.clientId
+      EventHubConnection__credential: 'managedidentity'
+      EventHubConnection__fullyQualifiedNamespace: '${eventHubNamespaceName}.servicebus.windows.net'
+      //EventHubConnection: eventHubConnectionString
       EventHubName: eventHubName
   }  
 }
