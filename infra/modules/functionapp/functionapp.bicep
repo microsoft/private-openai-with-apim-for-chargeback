@@ -16,9 +16,10 @@ param functionAppSubnetId string
 
 param location string = resourceGroup().location
 
-param functionPlanOS string= 'Linux'
-param functionRuntime string = 'dotnet-isolated'
-param linuxFxVersion string = 'DOTNET-ISOLATED|6.0'
+var functionPlanOS = 'Linux'
+var functionRuntime  = 'dotnet-isolated'
+var dotnetFrameworkVersion  = '6.0'
+var linuxFxVersion  = 'DOTNET-ISOLATED|6.0'
 var isReserved = functionPlanOS == 'Linux'
 
 
@@ -97,6 +98,7 @@ resource functionAppSiteConfig 'Microsoft.Web/sites/config@2022-09-01' = {
     vnetName: vnetName   
     publicNetworkAccess: 'Enabled'  
     functionsRuntimeScaleMonitoringEnabled: true 
+    netFrameworkVersion: dotnetFrameworkVersion
   }
 }
 
