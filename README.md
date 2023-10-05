@@ -50,6 +50,7 @@ Execute the following command, if you don't have any pre-existing Azure services
 
 1. Run `azd auth login`
 2. If your account has multiple subscriptions, run `azd env set AZURE_SUBSCRIPTION_ID {Subscription ID}` to set the subscription you want to deploy to.
+3. If you would like to give a custom name to the resource group, run `azd env set AZURE_RESOURCE_GROUP {Name of resource group}`. If you don't set this, resource group will be named `rg-enterprise-openai-${environmentName}`.
 3. Run `azd up` - This will provision Azure resources and deploy this sample to those resource
 4. After the application has been successfully deployed you will see a URL printed to the console.  Click that URL to interact with the application in your browser.
 It will look like the following:
@@ -78,6 +79,28 @@ If you've changed the infrastructure files (`infra` folder or `azure.yaml`), the
 
 ```azd up```
 
+## Test OpenAI RestEndpoints in Azure API Management
+
+Update the variables in the test script files with API Management service name `apimServiceName` and subscription key `apimSubscriptionKey`.
+To test OpenAI endpoints with stream enabled, update the value of `stream` variable to `true` in the test script files.
+
+### Completion
+
+1. Shell
+    ```./test-scripts/testcompletions.sh ```
+
+    <br>
+2. Powershell
+    ```./test-scripts/testcompletions.ps1```
+
+### Chat Completion
+
+1. Shell
+    ```./test-scripts/testchatcompletions.sh``` 
+    <br>
+2. Powershell
+    ```./test-scripts/testchatcompletions.ps1```
+
 
 ## Clean up
 
@@ -101,6 +124,25 @@ The resource group and all the resources will be deleted.
 
 [Tiktoken](https://www.nuget.org/packages/Tiktoken/1.1.2#show-readme-container) library is used to calculate tokens when "stream" is set as "true" to stream back partial progress from GPT models. 
 *If stream is set, partial message deltas will be sent, Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a data: [DONE] message.*
+
+#### TODOs
+1. Convert UserAssigned Managed Identity to System Assigned for APIM and Function App
+2. Add script to delete soft deleted resources
+3. Add script to create additional subscription key to apim
+4. UPDATE README.md
+    step by step flow    
+    how token is calculated
+    how to create dashboard from app insights querues
+5. add sample app insight queries
+ -- per subscription key
+ -- summary across all subscription keys 
+
+6. add script to create additional subscription key to apim
+
+#### Nice to Have
+1. Azure Deploy Button
+2. Client App
+    
 
 
 

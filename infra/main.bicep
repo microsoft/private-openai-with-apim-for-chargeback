@@ -23,7 +23,7 @@ var tags = {
 }
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' = {
-  name: !empty(resourceGroupName) ? resourceGroupName : 'rg-${environmentName}'
+  name: !empty(resourceGroupName) ? resourceGroupName : 'rg-enterprise-openai-${environmentName}'
   location: location
   tags: tags
 }
@@ -265,6 +265,6 @@ module functionApp './modules/functionapp/functionapp.bicep' = {
 
 output TENANT_ID string = subscription().tenantId
 output AOI_DEPLOYMENTID string = chatGptDeploymentName
-output APIM_NAME string = apim.outputs.apimName
-output APIM_AOI_PATH string = apim.outputs.apimOpenaiApiPath
+//output APIM_NAME string = apim.outputs.apimName
+//output APIM_AOI_PATH string = apim.outputs.apimOpenaiApiPath
 
