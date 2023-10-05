@@ -66,22 +66,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   properties: {
     enabled: true
     serverFarmId: hostingPlan.id
-    reserved: isReserved
-    siteConfig: {
-      linuxFxVersion: linuxFxVersion
-      detailedErrorLoggingEnabled: true
-      vnetRouteAllEnabled: true  
-      ftpsState: 'FtpsOnly'
-      minTlsVersion: '1.2'
-      scmMinTlsVersion: '1.2'
-      minimumElasticInstanceCount: 1      
-      vnetName: vnetName   
-      publicNetworkAccess: 'Enabled'  
-      functionsRuntimeScaleMonitoringEnabled: true 
-    }    
+    reserved: isReserved       
     virtualNetworkSubnetId: functionAppSubnetId    
   }
 }
+
 
 // Add the function to the subnet
 resource networkConfig 'Microsoft.Web/sites/networkConfig@2022-03-01' = {
@@ -92,6 +81,26 @@ resource networkConfig 'Microsoft.Web/sites/networkConfig@2022-03-01' = {
     swiftSupported: true
   }
 }
+
+//create functionapp siteconfig
+resource functionAppSiteConfig 'Microsoft.Web/sites/config@2022-09-01' = {
+  parent: functionApp
+  name: 'web'
+  properties: {
+    linuxFxVersion: linuxFxVersion
+    detailedErrorLoggingEnabled: true
+    vnetRouteAllEnabled: true  
+    ftpsState: 'FtpsOnly'
+    minTlsVersion: '1.2'
+    scmMinTlsVersion: '1.2'
+    minimumElasticInstanceCount: 1      
+    vnetName: vnetName   
+    publicNetworkAccess: 'Enabled'  
+    functionsRuntimeScaleMonitoringEnabled: true 
+  }
+}
+
+//Create functionapp appsettings
 
 resource functionAppSettings 'Microsoft.Web/sites/config@2020-12-01' = {
   parent: functionApp

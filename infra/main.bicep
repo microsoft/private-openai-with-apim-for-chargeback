@@ -10,7 +10,6 @@ param environmentName string
 @allowed(['australiaeast', 'canadaeast', 'eastus', 'eastus2', 'francecentral', 'japaneast', 'northcentralus', 'swedencentral', 'switzerlandnorth', 'uksouth', ])
 param location string
 
-@minLength(5)
 @description('Resource group name. If not provided, a default name will be generated.')
 param resourceGroupName string
 
