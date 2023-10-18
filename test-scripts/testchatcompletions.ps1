@@ -26,9 +26,7 @@ $chatCompletions_request = @"
 # echo $chatCompletions_request
 
 
-$headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-$headers.Add("Ocp-Apim-Subscription-Key", $apimSubscriptionKey)
-$headers.Add("Content-Type", "application/json")
+$headers = @{"Ocp-Apim-Subscription-Key"=$apimSubscriptionKey;"Content-Type"="application/json"}
 
 $response = Invoke-RestMethod $chatCompletionsApi -Method 'POST' -Headers $headers -Body $chatCompletions_request
 $response | ConvertTo-Json

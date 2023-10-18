@@ -21,9 +21,7 @@ $completions_request = @"
 "@
 # echo $completions_request
 
-$headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-$headers.Add("Ocp-Apim-Subscription-Key", $apimSubscriptionKey)
-$headers.Add("Content-Type", "application/json")
+$headers = @{"Ocp-Apim-Subscription-Key"=$apimSubscriptionKey;"Content-Type"="application/json"}
 
 $response = Invoke-RestMethod $completionsApi -Method 'POST' -Headers $headers -Body $completions_request
 $response | ConvertTo-Json
