@@ -2,6 +2,7 @@
 page_type: sample
 languages:
 - csharp
+- bicep
 products:
 - ai-services
 - azure-blob-storage
@@ -27,14 +28,13 @@ The repo includes:
 ## Benefits
 
 1. Private: Azure OpenAI Private Endpoints guarantees that data transmission remains protected from public internet exposure. By creating a private connection, Azure OpenAI Private Endpoints offer a secure and effective pathway for transmitting data between your infrastructure and the OpenAI service, thereby reducing potential security risks commonly associated with conventional public endpoints. Network traffic can be fully isolated to your network and other enterprise grade authentication security features are built in.
-
 2. Centralised and Secure Access: By integrating Azure OpenAI with Azure API Management (APIM) through Private Endpoints, you can secure access to Azure OpenAI and oversee access control. Furthermore, you have the ability to monitor service usage and health. Additionally, access to the Azure OpenAI service is also regulated via API Keys to authenticate and capture OpenAI usage.
-
 3.  Out of the box Token Usage Solution: The solution offers sample code for Azure functions that compute token usage across various consumers of the Azure OpenAI service. This implementation utilizes the Tokenizer package and computes token usage for both streaming and non-streaming requests to Azure OpenAI endpoints.
-
-4. Policy as Code: Using Azure APIM policies to configure access control, throttling loging and usage limits. It uses APIM log-to-eventhub policy to capture OpenAI requests and responses and sends it to the chargeback solution for calculation  
-
+4. Policy as Code: Using Azure APIM policies to configure access control, throttling loging and usage limits. It uses APIM log-to-eventhub policy to capture OpenAI requests and responses and sends it to the chargeback solution for calculation.
 5. End-to-end observability for applications: Azure Monitor provides access to application logs via Kusto Query Language. Also enables dashboard reports and monitoring and alerting capabilities.
+6. Larger Token Size: The advanced logging pattern permits capturing an event of up to 200KB, whereas the basic logging pattern accommodates a maximum size of 8,192 bytes. This feature facilitates capturing prompts and responses from models that accommodate larger token sizes, such as GPT4.
+7. Robust identity controls and comprehensive audit logging: Access to the Azure OpenAI Service resource is limited to Azure Active Directory identities, including service principals and managed identities. This is achieved through the implementation of an Azure API Management custom policy. The logs streaming to the Azure Event Hub capture the identity of the application initiating the request.
+8. Send token usage data to diverse reporting and analytical tools: Azure APIM sends usage data to an Azure Event Hub. These events can be subsequently processed through integration with Azure Stream Analytics and then routed to data stores, including Azure SQL, Azure CosmosDB, or a PowerBI Dataset.
 
 ## Application architecture
 
@@ -52,17 +52,22 @@ In order to deploy and run this example, you'll need
 
 ### Deploy to Azure
 
+#### Pre-requisite - Azure Developer CLI
+1. Download the [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/overview)
+1. If you have not cloned this repo, run `azd init -t microsoft/enterprise-azureopenai`. If you have cloned this repo, just run 'azd init' from the repo root directory.
+
 Execute the following command, if you don't have any pre-existing Azure services and want to start from a fresh deployment.
 
 1. Run `azd auth login`
 2. If your account has multiple subscriptions, run `azd env set AZURE_SUBSCRIPTION_ID {Subscription ID}` to set the subscription you want to deploy to.
 3. If you would like to give a custom name to the resource group, run `azd env set AZURE_RESOURCE_GROUP {Name of resource group}`. If you don't set this, resource group will be named `rg-enterprise-openai-${environmentName}`.
-3. Run `azd up` - This will provision Azure resources and deploy this sample to those resource
-4. After the application has been successfully deployed you will see a URL printed to the console.  Click that URL to interact with the application in your browser.
+4. Run `azd up` - This will provision Azure resources and deploy this sample to those resource
+5. After the application has been successfully deployed you will see a URL printed to the console.  Click that URL to interact with the application in your browser.
 It will look like the following:
 
 
-> NOTE: If you are running ```azd up``` for the first time, it may take upto 45 minutes for the application to be fully deployed as it it needs to wait for the Azure API Management to be fully provisioned. Subsequent deployments are a lot faster. You can check the status of the deployment by running `azd status`.
+> **Important** 
+> If you are running ```azd up``` for the first time, it may take upto 45 minutes for the application to be fully deployed as it it needs to wait for the Azure API Management to be fully provisioned. Subsequent deployments are a lot faster. You can check the status of the deployment by running `azd status`.
 
 
 ### Deploy to Azure with existing resources
@@ -164,9 +169,29 @@ The queries can be exported to Azure Dashboards
 ### Tiktoken
 
 [Tiktoken](https://www.nuget.org/packages/Tiktoken/1.1.2#show-readme-container) library is used to calculate tokens when "stream" is set as "true" to stream back partial progress from GPT models. 
-*If stream is set, partial message deltas will be sent, Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a data: [DONE] message.*
+*If `stream` is set, partial message deltas will be sent, Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a data: [DONE] message.*
 
 
+# Contributing
 
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
+Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
+the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+
+When you submit a pull request, a CLA bot will automatically determine whether you need to provide
+a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
+provided by the bot. You will only need to do this once across all repos using our CLA.
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+# Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+trademarks or logos is subject to and must follow
+[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
+Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
+Any use of third-party trademarks or logos are subject to those third-party's policies.
 
 
