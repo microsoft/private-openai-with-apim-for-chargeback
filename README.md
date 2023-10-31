@@ -1,15 +1,30 @@
-# Secure and Effective Azure OpenAI Chargeback Solution using Azure APIM and Private Endpoints
+---
+page_type: sample
+languages:
+- csharp
+products:
+- ai-services
+- azure-blob-storage
+- azure-function-apps
+- azure-cognitive-search
+- azure-openai
+- aspnet-core
+- azure api management
+- azure event hub
+---
 
+# Open AI with Azure API Management and Private Link for Chargeback
 
-# Introduction
+This sample demonstartes how to host an Azure OpenAI instance in a private and secure manner in their own Azure tenancy and publish the Azure OpenAI endpoints in Azure API Management. The solution uses Azure APIM `log-to-eventhub` policy to capture OpenAI requests and responses to calculate chargebacks.
 
-_Secure Azure OpenAI Charegback Solution Accelerator_
+The repo includes: 
+1. Infrastructure as Code ( Bicep templates) to provision Azure resources for Azure OpenAI, Azure API Management, Azure Event Hub and Azure Function App and also configure the Private Links.
 
-![](/assets/architecture.png)
+2. A function app that computes token usage across various consumers of the Azure OpenAI service. This implementation utilizes the Tokenizer package and computes token usage for both streaming and non-streaming requests to Azure OpenAI endpoints.
 
-_Secure Azure OpenAI Charegback Solution Accelerator_ powered is a solution accelerator that allows organisations to deploy an Azure OpenAI instance in a private and secure manner in their Azure tenancy. This solution accelerator is built using Azure APIM and Private links. 
+3. Test scripts to test OpenAI chat and chat completions endpoints in Azure API Management using powershell or shell scripts.
 
-Benefits are:
+## Benefits
 
 1. Private: Azure OpenAI Private Endpoints guarantees that data transmission remains protected from public internet exposure. By creating a private connection, Azure OpenAI Private Endpoints offer a secure and effective pathway for transmitting data between your infrastructure and the OpenAI service, thereby reducing potential security risks commonly associated with conventional public endpoints. Network traffic can be fully isolated to your network and other enterprise grade authentication security features are built in.
 
@@ -17,24 +32,25 @@ Benefits are:
 
 3.  Out of the box Token Usage Solution: The solution offers sample code for Azure functions that compute token usage across various consumers of the Azure OpenAI service. This implementation utilizes the Tokenizer package and computes token usage for both streaming and non-streaming requests to Azure OpenAI endpoints.
 
-4. Polciy as Code: Using Azure APIM policies to configure access control, throttling loging and usage limits. It uses APIM log-to-eventhub policy to capture OpenAI requests and responses and sends it to the chargeback solution for calculation  
+4. Policy as Code: Using Azure APIM policies to configure access control, throttling loging and usage limits. It uses APIM log-to-eventhub policy to capture OpenAI requests and responses and sends it to the chargeback solution for calculation  
 
-4. End-to-end observability for applications: Azure Monitor provides access to application logs via Kusto Query Language. Also enables dashboard reports and monitoring and alerting capabilities.
+5. End-to-end observability for applications: Azure Monitor provides access to application logs via Kusto Query Language. Also enables dashboard reports and monitoring and alerting capabilities.
 
+## Application architecture
 
-## Azure account requirements
+![enterprise-openai-apim](assets/architecture.png)
 
-**IMPORTANT:** In order to deploy and run this example, you'll need:
+## Getting Started
+
+### Account Requirements
+
+In order to deploy and run this example, you'll need
 
 * **Azure account**. If you're new to Azure, [get an Azure account for free](https://azure.microsoft.com/free/cognitive-search/) and you'll get some free Azure credits to get started.
 * **Azure subscription with access enabled for the Azure OpenAI service**. You can request access with [this form](https://aka.ms/oaiapply). If your access request to Azure OpenAI service doesn't match the [acceptance criteria](https://learn.microsoft.com/legal/cognitive-services/openai/limited-access?context=%2Fazure%2Fcognitive-services%2Fopenai%2Fcontext%2Fcontext), you can use [OpenAI public API](https://platform.openai.com/docs/api-reference/introduction) instead. Learn [how to switch to an OpenAI instance](#switching-from-an-azure-openai-endpoint-to-an-openai-instance).
 * **Azure account permissions**: Your Azure account must have `Microsoft.Authorization/roleAssignments/write` permissions, such as [Role Based Access Control Administrator](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#role-based-access-control-administrator-preview), [User Access Administrator](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator), or [Owner](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#owner). If you don't have subscription-level permissions, you must be granted [RBAC](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#role-based-access-control-administrator-preview) for an existing resource group and [deploy to that existing group](#existing-resource-group).
 
-## Architecture
-
-![enterprise-openai-apim](assets/architecture.png)
-
-## Azure deployment
+### Deploy to Azure
 
 Execute the following command, if you don't have any pre-existing Azure services and want to start from a fresh deployment.
 
@@ -49,7 +65,7 @@ It will look like the following:
 > NOTE: If you are running ```azd up``` for the first time, it may take upto 45 minutes for the application to be fully deployed as it it needs to wait for the Azure API Management to be fully provisioned. Subsequent deployments are a lot faster. You can check the status of the deployment by running `azd status`.
 
 
-### Deploying with existing Azure resources
+### Deploy to Azure with existing resources
 
 If you already have existing Azure resources, you can re-use those by setting `azd` environment values.
 
@@ -61,7 +77,7 @@ If you already have existing Azure resources, you can re-use those by setting `a
 
 ### Deploying again
 
-If you've only changed the backend/frontend code in the `app` folder, then you don't need to re-provision the Azure resources. You can just run:
+If you've only changed the function app code in the `app` folder, then you don't need to re-provision the Azure resources. You can just run:
 
 ```azd deploy```
 
@@ -69,10 +85,20 @@ If you've changed the infrastructure files (`infra` folder or `azure.yaml`), the
 
 ```azd up```
 
-## Test OpenAI RestEndpoints in Azure API Management
+### Clean up
 
-Update the variables in the test script files with API Management service name `apimServiceName` and subscription key `apimSubscriptionKey`.
-To test OpenAI endpoints with stream enabled, update the value of `stream` variable to `true` in the test script files.
+To clean up all the resources created by this sample:
+
+1. Run `azd down`
+2. When asked if you are sure you want to continue, enter `y`
+3. When asked if you want to permanently delete the resources, enter `y`
+
+The resource group and all the resources will be deleted.
+
+## Testing the solution
+
+- Update the variables in the test script files with API Management service name `apimServiceName` and subscription key `apimSubscriptionKey`.
+- To test OpenAI endpoints with stream enabled, update the value of `stream` variable to `true` in the test script files.
 
 ### Completion
 
@@ -92,23 +118,48 @@ To test OpenAI endpoints with stream enabled, update the value of `stream` varia
     ```./test-scripts/testchatcompletions.ps1```
 
 
-## Clean up
+## Azure Monitor to calculate tokens usage for chargeback
 
-To clean up all the resources created by this sample:
+- Once the Chargeback functionapp calculates the prompt and completion tokens per OpenAI request, it logs the information to Azure Log Analytics. 
+- All custom logs from function app is logged to a table called `customEvents`
 
-1. Run `azd down`
-2. When asked if you are sure you want to continue, enter `y`
-3. When asked if you want to permanently delete the resources, enter `y`
+- Example query to identify token usage by a specific client key:
+```kusto
+customEvents
+| where name contains "Azure OpenAI Tokens"
+| extend tokenData = parse_json(customDimensions)
+| where tokenData.AppKey contains "your-client-key"
+| project    
+    Timestamp = tokenData.Timestamp,
+    Stream = tokenData.Stream,
+    ApiOperation = tokenData.ApiOperation,    
+    PromptTokens = tokenData.PromptTokens,
+    CompletionTokens = tokenData.CompletionTokens,
+    TotalTokens = tokenData.TotalTokens
+```
 
-The resource group and all the resources will be deleted.
+- Example query to identify token usage for all consumers
+```kusto
+customEvents
+| where name contains "Azure OpenAI Tokens"
+| extend tokenData = parse_json(customDimensions)
+| extend
+    AppKey = tokenData.AppKey,
+    PromptTokens = tokenData.PromptTokens,
+    CompletionTokens = tokenData.CompletionTokens,
+    TotalTokens = tokenData.TotalTokens
+| summarize PromptTokens = sum(toint(PromptTokens)) , CompletionTokens = sum(toint(CompletionTokens)), TotalTokens = sum(toint(TotalTokens)) by tostring(AppKey)
+| project strcat(substring(tostring(AppKey),0,8), "XXXX"), PromptTokens, CompletionTokens, TotalTokens
+```
+
+The queries can be exported to Azure Dashboards
+![azuredashboard](assets/azuredashboard.png)
 
 ## Additional Details
-
 
 ### Azure OpenAI Swagger Specification
 
 [Azure OpenAI Swagger Spec](https://github.com/Azure/azure-rest-api-specs/blob/main/specification/cognitiveservices/data-plane/AzureOpenAI/inference/stable/2023-05-15/inference.json) is imported in Azure API Management.
-
 
 ### Tiktoken
 
