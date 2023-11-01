@@ -18,6 +18,7 @@ products:
 
 ## Table of Contents
 
+
   - [Overview](#overview)
   - [Benefits](#benefits)
   - [Application architecture](#application-architecture)
@@ -25,10 +26,9 @@ products:
     - [Account Requirements](#account-requirements)
     - [Deploy to Azure](#deploy-to-azure)
       - [Pre-requisite - Azure Developer CLI](#pre-requisite---azure-developer-cli)
-    - [Deploy to Azure with existing resources](#deploy-to-azure-with-existing-resources)
-      - [Existing resource group](#existing-resource-group)
-    - [Deploying again](#deploying-again)
-    - [Clean up](#clean-up)
+      - [Deploy to Azure to existing Resource Group](#deploy-to-azure-to-existing-resource-group)
+      - [Deploying again](#deploying-again)
+      - [Clean up](#clean-up)
   - [Testing the solution](#testing-the-solution)
     - [Completion](#completion)
     - [Chat Completion](#chat-completion)
@@ -42,7 +42,6 @@ products:
 
 This sample demonstrates hosting Azure OpenAI (AOAI) instance privately within (customer's) Azure tenancy and publishing AOAI via Azure API Management (APIM). 
 APIM plays a key role to montior and govern all the requests routed towards Azure OpenAI. Customer gets full control on who gets to access the AOAI and ability to charge back the AOAI users. 
-
 
 The repo includes: 
 1. Infrastructure as Code (Bicep templates) to provision Azure resources for Azure OpenAI, Azure API Management, Azure Event Hub and Azure Function App and Azure Private Links configuration. 
@@ -107,11 +106,9 @@ It will look like the following:
 > If you are running ```azd up``` for the first time, it may take upto 45 minutes for the application to be fully deployed as it it needs to wait for the Azure API Management to be fully provisioned. Subsequent deployments are a lot faster. You can check the status of the deployment by running `azd status`.
 
 
-### Deploy to Azure with existing resources
+### Deploy to Azure to existing Resource Group
 
 If you already have existing Azure resources, you can re-use those by setting `azd` environment values.
-
-#### Existing resource group
 
 1. [OPTIONAL]: RUN `azd env set AZURE_SUBSCRIPTION_ID {Subscription ID}` if your account has multiple subscriptions and you want to deploy to a specific subscription.
 1. Run `azd env set AZURE_RESOURCE_GROUP {Name of existing resource group}`
