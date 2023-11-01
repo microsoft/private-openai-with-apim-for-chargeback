@@ -14,12 +14,17 @@ products:
 - azure event hub
 ---
 
-# Open AI with Azure API Management and Private Link for Chargeback
+# Azure OpenAI with Azure API Management and Private Link for Chargeback
 
-This sample demonstartes how to host an Azure OpenAI instance in a private and secure manner in their own Azure tenancy and publish the Azure OpenAI endpoints in Azure API Management. The solution uses Azure APIM `log-to-eventhub` policy to capture OpenAI requests and responses to calculate chargebacks.
+## Overview
+
+This sample demonstartes hosting Azure OpenAI (AOAI) instance privately within (customer's) Azure tenancy and publishing AOAI via Azure API Management (APIM). 
+APIM plays a key role to montior and govern all the requests routed towards Azure OpenAI. Customer gets full control on who gets to access the AOAI and ability 
+to charge back the AOAI users. 
+
 
 The repo includes: 
-1. Infrastructure as Code ( Bicep templates) to provision Azure resources for Azure OpenAI, Azure API Management, Azure Event Hub and Azure Function App and also configure the Private Links.
+1. Infrastructure as Code ( Bicep templates) to provision Azure resources for Azure OpenAI, Azure API Management, Azure Event Hub and Azure Function App and Azure Private Link configuration. 
 
 2. A function app that computes token usage across various consumers of the Azure OpenAI service. This implementation utilizes the Tokenizer package and computes token usage for both streaming and non-streaming requests to Azure OpenAI endpoints.
 
