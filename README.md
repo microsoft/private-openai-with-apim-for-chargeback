@@ -16,15 +16,36 @@ products:
 
 # Azure OpenAI with Azure API Management and Private Link for Chargeback
 
+## Table of Contents
+
+  - [Overview](#overview)
+  - [Benefits](#benefits)
+  - [Application architecture](#application-architecture)
+  - [Getting Started](#getting-started)
+    - [Account Requirements](#account-requirements)
+    - [Deploy to Azure](#deploy-to-azure)
+      - [Pre-requisite - Azure Developer CLI](#pre-requisite---azure-developer-cli)
+    - [Deploy to Azure with existing resources](#deploy-to-azure-with-existing-resources)
+      - [Existing resource group](#existing-resource-group)
+    - [Deploying again](#deploying-again)
+    - [Clean up](#clean-up)
+  - [Testing the solution](#testing-the-solution)
+    - [Completion](#completion)
+    - [Chat Completion](#chat-completion)
+  - [Azure Monitor queries to extract tokens usage metrics](#azure-monitor-queries-to-extract-tokens-usage-metrics)
+  - [Additional Details](#additional-details)
+    - [Azure OpenAI Swagger Specification](#azure-openai-swagger-specification)
+    - [Tiktoken](#tiktoken)
+
+
 ## Overview
 
 This sample demonstrates hosting Azure OpenAI (AOAI) instance privately within (customer's) Azure tenancy and publishing AOAI via Azure API Management (APIM). 
-APIM plays a key role to montior and govern all the requests routed towards Azure OpenAI. Customer gets full control on who gets to access the AOAI and ability 
-to charge back the AOAI users. 
+APIM plays a key role to montior and govern all the requests routed towards Azure OpenAI. Customer gets full control on who gets to access the AOAI and ability to charge back the AOAI users. 
 
 
 The repo includes: 
-1. Infrastructure as Code ( Bicep templates) to provision Azure resources for Azure OpenAI, Azure API Management, Azure Event Hub and Azure Function App and Azure Private Link configuration. 
+1. Infrastructure as Code (Bicep templates) to provision Azure resources for Azure OpenAI, Azure API Management, Azure Event Hub and Azure Function App and Azure Private Links configuration. 
 
 2. A function app that computes token usage across various consumers of the Azure OpenAI service. This implementation utilizes the Tokenizer package and computes token usage for both streaming and non-streaming requests to Azure OpenAI endpoints.
 
@@ -49,9 +70,9 @@ _Client App has to pass a valid subscription key in the request header. Azure AP
 3. Azure OpenAI Service responds back to Azure API Management using private link.
 4. Azure API Management logs the request and response data to an event hub using `log-to-eventhub` policy in APIM. APIM authenticates with EventHub using Managed Identity and sends the log data via private link.
 5. `ChargebackEventHubTrigger` Azure Function is triggered when the message arrives in Event Hub from APIM. It calculates prompt and completion token counts. 
-_For streaming requests, it uses [Tiktoken](#tiktoken) library to calculate tokens. For non-streaming requests, it uses the token count data returned in the response from OpenAI service. _
+_For streaming requests, it uses [Tiktoken](#tiktoken) library to calculate tokens. For non-streaming requests, it uses the token count data returned in the response from OpenAI service._
 6. Azure Function logs the token usage data to Application Insights. Once the data is in Log Analytics workspace for Application insights, it can be queried to get tokens count for the client applications. 
-View sample queries: [Token Usage Queries](#azure-monitor-to-calculate-tokens-usage-for-chargeback)
+_View sample queries: [Token Usage Queries](#azure-monitor-queries-to-extract-tokens-usage-metrics)_
 
 
 ![enterprise-openai-apim](assets/architecture.png)
@@ -125,7 +146,6 @@ The resource group and all the resources will be deleted.
 
 1. Shell
     ```./test-scripts/testcompletions.sh ```
-
     <br>
 2. Powershell
     ```./test-scripts/testcompletions.ps1```
@@ -139,7 +159,7 @@ The resource group and all the resources will be deleted.
     ```./test-scripts/testchatcompletions.ps1```
 
 
-## Azure Monitor to calculate tokens usage for chargeback
+## Azure Monitor queries to extract tokens usage metrics
 
 - Once the Chargeback functionapp calculates the prompt and completion tokens per OpenAI request, it logs the information to Azure Log Analytics. 
 - All custom logs from function app is logged to a table called `customEvents`
