@@ -18,7 +18,7 @@ products:
 
 ## Overview
 
-This sample demonstartes hosting Azure OpenAI (AOAI) instance privately within (customer's) Azure tenancy and publishing AOAI via Azure API Management (APIM). 
+This sample demonstrates hosting Azure OpenAI (AOAI) instance privately within (customer's) Azure tenancy and publishing AOAI via Azure API Management (APIM). 
 APIM plays a key role to montior and govern all the requests routed towards Azure OpenAI. Customer gets full control on who gets to access the AOAI and ability 
 to charge back the AOAI users. 
 
@@ -32,16 +32,27 @@ The repo includes:
 
 ## Benefits
 
-1. Private: Azure OpenAI Private Endpoints guarantees that data transmission remains protected from public internet exposure. By creating a private connection, Azure OpenAI Private Endpoints offer a secure and effective pathway for transmitting data between your infrastructure and the OpenAI service, thereby reducing potential security risks commonly associated with conventional public endpoints. Network traffic can be fully isolated to your network and other enterprise grade authentication security features are built in.
-2. Centralised and Secure Access: By integrating Azure OpenAI with Azure API Management (APIM) through Private Endpoints, you can secure access to Azure OpenAI and oversee access control. Furthermore, you have the ability to monitor service usage and health. Additionally, access to the Azure OpenAI service is also regulated via API Keys to authenticate and capture OpenAI usage.
-3.  Out of the box Token Usage Solution: The solution offers sample code for Azure functions that compute token usage across various consumers of the Azure OpenAI service. This implementation utilizes the Tokenizer package and computes token usage for both streaming and non-streaming requests to Azure OpenAI endpoints.
-4. Policy as Code: Using Azure APIM policies to configure access control, throttling loging and usage limits. It uses APIM log-to-eventhub policy to capture OpenAI requests and responses and sends it to the chargeback solution for calculation.
-5. End-to-end observability for applications: Azure Monitor provides access to application logs via Kusto Query Language. Also enables dashboard reports and monitoring and alerting capabilities.
-6. Larger Token Size: The advanced logging pattern permits capturing an event of up to 200KB, whereas the basic logging pattern accommodates a maximum size of 8,192 bytes. This feature facilitates capturing prompts and responses from models that accommodate larger token sizes, such as GPT4.
-7. Robust identity controls and comprehensive audit logging: Access to the Azure OpenAI Service resource is limited to Azure Active Directory identities, including service principals and managed identities. This is achieved through the implementation of an Azure API Management custom policy. The logs streaming to the Azure Event Hub capture the identity of the application initiating the request.
-8. Send token usage data to diverse reporting and analytical tools: Azure APIM sends usage data to an Azure Event Hub. These events can be subsequently processed through integration with Azure Stream Analytics and then routed to data stores, including Azure SQL, Azure CosmosDB, or a PowerBI Dataset.
+1. *Private*: Azure OpenAI Private Endpoints guarantees that data transmission remains protected from public internet exposure. By creating a private connection, Azure OpenAI Private Endpoints offer a secure and effective pathway for transmitting data between your infrastructure and the OpenAI service, thereby reducing potential security risks commonly associated with conventional public endpoints. Network traffic can be fully isolated to your network and other enterprise grade authentication security features are built in.
+2. *Centralised and Secure Access*: By integrating Azure OpenAI with Azure API Management (APIM) through Private Endpoints, you can secure access to Azure OpenAI and oversee access control. Furthermore, you have the ability to monitor service usage and health. Additionally, access to the Azure OpenAI service is also regulated via API Keys to authenticate and capture OpenAI usage.
+3. *Out of the box Token Usage Solution*: The solution offers sample code for Azure functions that compute token usage across various consumers of the Azure OpenAI service. This implementation utilizes the Tokenizer package and computes token usage for both streaming and non-streaming requests to Azure OpenAI endpoints.
+4. *Policy as Code*: Using Azure APIM policies to configure access control, throttling loging and usage limits. It uses APIM log-to-eventhub policy to capture OpenAI requests and responses and sends it to the chargeback solution for calculation.
+5. *End-to-end observability for applications*: Azure Monitor provides access to application logs via Kusto Query Language. Also enables dashboard reports and monitoring and alerting capabilities.
+6. *Larger Token Size*: The advanced logging pattern permits capturing an event of up to 200KB, whereas the basic logging pattern accommodates a maximum size of 8,192 bytes. This feature facilitates capturing prompts and responses from models that accommodate larger token sizes, such as GPT4.
+7. *Robust identity controls and comprehensive audit logging*: Access to the Azure OpenAI Service resource is limited to Azure Active Directory identities, including service principals and managed identities. This is achieved through the implementation of an Azure API Management custom policy. The logs streaming to the Azure Event Hub capture the identity of the application initiating the request.
+8. *Send token usage data to diverse reporting and analytical tools*: Azure APIM sends usage data to an Azure Event Hub. These events can be subsequently processed through integration with Azure Stream Analytics and then routed to data stores, including Azure SQL, Azure CosmosDB, or a PowerBI Dataset.
 
 ## Application architecture
+
+1. Client Application requests the `completions` or `chat completions` endpoints of Azure OpenAI Service in Azure API Management.
+_Client App has to pass a valid subscription key in the request header. Azure APIM validates the subscription key and returns an Unauthorized error response if an invalid subscription key is passed._
+2. If the request is valid, Azure API Management authenticates with OpenAI service using managed identity and forwards the request to Azure OpenAI Service via private link.
+3. Azure OpenAI Service responds back to Azure API Management using private link.
+4. Azure API Management logs the request and response data to an event hub using `log-to-eventhub` policy in APIM. APIM authenticates with EventHub using Managed Identity and sends the log data via private link.
+5. `ChargebackEventHubTrigger` Azure Function is triggered when the message arrives in Event Hub from APIM. It calculates prompt and completion token counts. 
+_For streaming requests, it uses [Tiktoken](#tiktoken) library to calculate tokens. For non-streaming requests, it uses the token count data returned in the response from OpenAI service. _
+6. Azure Function logs the token usage data to Application Insights. Once the data is in Log Analytics workspace for Application insights, it can be queried to get tokens count for the client applications. 
+View sample queries: [Token Usage Queries](#azure-monitor-to-calculate-tokens-usage-for-chargeback)
+
 
 ![enterprise-openai-apim](assets/architecture.png)
 
