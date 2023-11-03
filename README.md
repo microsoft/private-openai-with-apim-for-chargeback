@@ -161,7 +161,7 @@ The resource group and all the resources will be deleted.
 - Once the Chargeback functionapp calculates the prompt and completion tokens per OpenAI request, it logs the information to Azure Log Analytics. 
 - All custom logs from function app is logged to a table called `customEvents`
 
-- Example query to identify token usage by a specific client key:
+- Example query to fetch token usage by a specific client key:
 ```kusto
 customEvents
 | where name contains "Azure OpenAI Tokens"
@@ -176,7 +176,7 @@ customEvents
     TotalTokens = tokenData.TotalTokens
 ```
 
-- Example query to identify token usage for all consumers
+- Example query to fetch token usage for all consumers
 ```kusto
 customEvents
 | where name contains "Azure OpenAI Tokens"
@@ -190,7 +190,7 @@ customEvents
 | project strcat(substring(tostring(AppKey),0,8), "XXXX"), PromptTokens, CompletionTokens, TotalTokens
 ```
 
-The queries can be exported to Azure Dashboards
+The queries can be visualised using Azure Dashboards
 ![azuredashboard](assets/azuredashboard.png)
 
 ## Additional Details
