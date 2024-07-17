@@ -8,6 +8,7 @@
         }
     },
     "features": {
+        "dotnet": "8.0"
         // See https://containers.dev/features for list of features
     },
     "customizations": {
@@ -22,7 +23,8 @@
                 "ms-vscode.vscode-node-azure-pack",
                 "ms-azuretools.vscode-apimanagement",
                 "GitHub.copilot",
-                "DotJoshJohnson.xml"
+                "DotJoshJohnson.xml",
+                "ms-dotnettools.csharp" 
                 // Include other VSCode language extensions if needed
                 // Right click on an extension inside VSCode to add directly to devcontainer.json, or copy the extension ID
             ]
